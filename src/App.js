@@ -2,12 +2,9 @@ import { useState, useEffect } from 'react';
 import './App.css';
 import { ATTRIBUTE_LIST, CLASS_LIST, SKILL_LIST } from './consts.js';
 
-/**
- * Main application component
- */
 function App() {
-  const MAX_ATTRIBUTES = 70;
-  const GITHUB_USERNAME = 'accompany1205'; // Replace with your GitHub username
+  const MAX_ATTRIBUTES = process.env.REACT_APP_MAX_ATTRIBUTES;
+  const GITHUB_USERNAME = process.env.REACT_APP_GITHUB_USERNAME;
 
   // State Hooks
   const [attributeVals, setAttributeVals] = useState(changeAttributeFromListToObj(10));
@@ -33,7 +30,7 @@ function App() {
           setCharacters(data.body.characters || []);
         }
       });
-  }, []);
+  }, [GITHUB_USERNAME]);
 
   // Update selected character's attributes and skills when selection changes
   useEffect(() => {
@@ -48,11 +45,7 @@ function App() {
     }
   }, [selectedCharacterIndex, characters]);
 
-  /**
-   * Converts ATTRIBUTE_LIST to an object with specified initial values
-   * @param {number} initialValue - Initial value for attributes
-   * @returns {Object} - Object with attributes as keys and initial values
-   */
+  //Converts ATTRIBUTE_LIST to an object with specified initial values
   function changeAttributeFromListToObj(initialValue) {
     return ATTRIBUTE_LIST.reduce((obj, curr) => {
       obj[curr] = initialValue;
@@ -60,10 +53,7 @@ function App() {
     }, {});
   }
 
-  /**
-   * Creates a skill list object with initial values set to 0
-   * @returns {Object} - Object with skill names as keys and initial values
-   */
+  //Creates a skill list object with initial values set to 0
   function createSkillList() {
     return SKILL_LIST.reduce((obj, curr) => {
       obj[curr.name] = 0;
@@ -71,11 +61,7 @@ function App() {
     }, {});
   }
 
-  /**
-   * Handles changes in attribute values
-   * @param {string} attribute - Attribute name
-   * @param {number} delta - Change in value (positive or negative)
-   */
+  //Handles changes in attribute values
   function handleAttributeChange(attribute, delta) {
     const newAttributeVals = { ...attributeVals };
     const totalAttributes = Object.values(newAttributeVals).reduce((a, b) => a + b, 0);
@@ -86,10 +72,7 @@ function App() {
     }
   }
 
-  /**
-   * Updates attribute modifiers based on attribute values
-   * @param {Object} attributeVals - Current attribute values
-   */
+  //Updates attribute modifiers based on attribute values
   function updateAttributeMods(attributeVals) {
     const newAttributeMods = { ...attributeMods };
     for (const attr in attributeVals) {
@@ -100,10 +83,7 @@ function App() {
     updateClassesAchieved(newAttributeMods);
   }
 
-  /**
-   * Updates the list of achieved classes based on attribute modifiers
-   * @param {Object} attributeMods - Current attribute modifiers
-   */
+  //Updates the list of achieved classes based on attribute modifiers
   function updateClassesAchieved(attributeMods) {
     const newClassesAchieved = [];
     for (const className in CLASS_LIST) {
@@ -116,11 +96,7 @@ function App() {
     setClassesAchieved(newClassesAchieved);
   }
 
-  /**
-   * Handles changes in skill points
-   * @param {string} skill - Skill name
-   * @param {number} delta - Change in value (positive or negative)
-   */
+  //Handles changes in skill points
   function handleSkillChange(skill, delta) {
     const newSkillPoints = { ...skillPoints };
     const pointsSpent = Object.values(newSkillPoints).reduce((a, b) => a + b, 0);
@@ -131,10 +107,7 @@ function App() {
     }
   }
 
-  /**
-   * Updates total skill values based on skill points and attribute modifiers
-   * @param {Object} skillPoints - Current skill points
-   */
+  //Updates total skill values based on skill points and attribute modifiers
   function updateSkillTotals(skillPoints) {
     const newSkillTotals = { ...skillTotals };
     for (const skill of SKILL_LIST) {
@@ -144,10 +117,7 @@ function App() {
     setSkillTotals(newSkillTotals);
   }
 
-  /**
-   * Handles saving the current character data to the server
-   * @param {Event} e - Event object
-   */
+  // Handles saving the current character data to the server
   function handleSave(e) {
     e.preventDefault();
     console.log(selectedCharacterIndex, attributeVals);
@@ -179,12 +149,11 @@ function App() {
     .then(response => response.json())
     .then(()=>{
       setCharacters(data.characters)
+      setCreatingNew(false)
     });
   }
 
-  /**
-   * Handles rolling a random number and calculating the skill check result
-   */
+  //Handles rolling a random number and calculating the skill check result
   function handleRoll() {
     const randomRoll = Math.floor(Math.random() * 20) + 1;
     setRollResult(randomRoll);
@@ -303,22 +272,20 @@ function App() {
         </div>
         <div className='content-footer mt-1'>
           <div>
-            <button className='ml-1' onClick={() => {
-              if(!isCreatingNew){
-                setCharacters(_characters => [..._characters, {
-                  attributeVals: changeAttributeFromListToObj(10), 
-                  attributeMods: changeAttributeFromListToObj(0), 
-                  classesAchieved: [], 
-                  pointsSpendingMax: 10, 
-                  skillPoints: createSkillList(), 
-                  skillTotals: createSkillList(),
-                }]);
-                setSelectedCharacterIndex(characters.length);
-                setCreatingNew(true);
-              }else{
-                alert(`Complete the process of exsiting creation!`);
-              }
-            }}>Add Character</button>
+            {!isCreatingNew && (
+              <button className='ml-1' onClick={() => {
+                  setCharacters(_characters => [..._characters, {
+                    attributeVals: changeAttributeFromListToObj(10), 
+                    attributeMods: changeAttributeFromListToObj(0), 
+                    classesAchieved: [], 
+                    pointsSpendingMax: 10, 
+                    skillPoints: createSkillList(), 
+                    skillTotals: createSkillList(),
+                  }]);
+                  setSelectedCharacterIndex(characters.length);
+                  setCreatingNew(true);
+              }}>Add Character</button>
+            )}
             {isCreatingNew && (
               <button className='ml-1 mr-1' onClick={() => {
                 setSelectedCharacterIndex(characters.length - 2);
